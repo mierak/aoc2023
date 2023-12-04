@@ -26,13 +26,9 @@ pub fn part2(input: &str) -> Result<String> {
             let mut res = Res::default();
             let chars: Vec<char> = val.chars().collect();
 
-            for i in 0..val.chars().count() {
+            for i in 0..chars.len() {
                 let ele = chars[i];
-                if let Some(val) = find_num_from_word_of_len(&chars, 5, i) {
-                    res.set(val);
-                } else if let Some(val) = find_num_from_word_of_len(&chars, 4, i) {
-                    res.set(val);
-                } else if let Some(val) = find_num_from_word_of_len(&chars, 3, i) {
+                if let Some(val) = find_num_from_word_of_len(&chars, i) {
                     res.set(val);
                 } else if ele.is_numeric() {
                     let Some(ele) = ele.to_digit(10) else {
@@ -76,31 +72,20 @@ impl Res {
     }
 }
 
-fn find_num_from_word_of_len(chars: &[char], len: usize, idx: usize) -> Option<u32> {
-    if idx >= (len - 1) {
-        let word = String::from_iter(&chars[idx - (len - 1)..=idx]);
-        if word.ends_with("one") {
-            Some(1)
-        } else if word.ends_with("two") {
-            Some(2)
-        } else if word.ends_with("three") {
-            Some(3)
-        } else if word.ends_with("four") {
-            Some(4)
-        } else if word.ends_with("five") {
-            Some(5)
-        } else if word.ends_with("six") {
-            Some(6)
-        } else if word.ends_with("seven") {
-            Some(7)
-        } else if word.ends_with("eight") {
-            Some(8)
-        } else if word.ends_with("nine") {
-            Some(9)
-        } else {
-            None
-        }
-    } else {
-        None
+fn find_num_from_word_of_len(chars: &[char], idx: usize) -> Option<u32> {
+    if chars.len() < idx {
+        return None;
+    }
+    match chars[..=idx] {
+        [.., 'o', 'n', 'e'] => Some(1),
+        [.., 't', 'w', 'o'] => Some(2),
+        [.., 's', 'i', 'x'] => Some(6),
+        [.., 'f', 'o', 'u', 'r'] => Some(4),
+        [.., 'f', 'i', 'v', 'e'] => Some(5),
+        [.., 'n', 'i', 'n', 'e'] => Some(9),
+        [.., 't', 'h', 'r', 'e', 'e'] => Some(3),
+        [.., 's', 'e', 'v', 'e', 'n'] => Some(7),
+        [.., 'e', 'i', 'g', 'h', 't'] => Some(8),
+        _ => None,
     }
 }
