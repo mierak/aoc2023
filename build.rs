@@ -32,7 +32,7 @@ use colored::Colorize;
 "#;
 
 fn main() {
-    let day_nums = std::fs::read_dir("src")
+    let mut day_nums = std::fs::read_dir("src")
         .unwrap()
         .filter_map(|e| {
             let val = e.unwrap().file_name().to_string_lossy().to_string();
@@ -49,6 +49,7 @@ fn main() {
         })
         .collect::<Result<Vec<usize>, _>>()
         .unwrap();
+    day_nums.sort();
 
     let mut out = std::fs::File::create("src/lib.rs").unwrap();
     out.write_all(IMPORTS).unwrap();
