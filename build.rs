@@ -6,12 +6,12 @@ fn part(day: &usize, part: &i32) -> String {
     let start = std::time::Instant::now();
     match day{day}::part{part}(buf) {{
         Ok(res) => {{
-            let elapsed = start.elapsed().as_micros() as f64 / 1000.0;
-            println!("d{day:0>2}p{part} answer is: '{{}}' and took: {{:.5}}{{}}", res.as_str().green(), elapsed.to_string().yellow(), "ms".yellow());
+            let elapsed = start.elapsed().as_secs_f64();
+            println!("d{day:0>2}p{part} answer is: '{{}}' and took: {{:}}{{}}", res.as_str().green(), elapsed.to_string().yellow(), "s".yellow());
         }}
         Err(err) => {{
-            let elapsed = start.elapsed().as_micros() as f64 / 1000.0;
-            println!("d{day:0>2}p{part} {{}} and took: {{:.5}}{{}}", "FAILED".bright_red(), elapsed.to_string().yellow(), "ms".yellow());
+            let elapsed = start.elapsed().as_secs_f64();
+            println!("d{day:0>2}p{part} {{}} and took: {{:}}{{}}", "FAILED".bright_red(), elapsed.to_string().yellow(), "s".yellow());
             println!("Failure message: {{}}", err);
         }}
     }};
