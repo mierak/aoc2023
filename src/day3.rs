@@ -6,7 +6,7 @@ enum Mode {
     GearRatio,
 }
 
-pub fn part1(input: &str) -> Result<String> {
+pub fn part1(input: &str) -> Result<i32> {
     let mut res: Vec<Vec<Element>> = input
         .lines()
         .map(|line| line.chars().map(Element::new).collect())
@@ -23,10 +23,10 @@ pub fn part1(input: &str) -> Result<String> {
         }
     }
 
-    Ok(sum.to_string())
+    Ok(sum)
 }
 
-pub fn part2(input: &str) -> Result<String> {
+pub fn part2(input: &str) -> Result<i32> {
     let mut res: Vec<Vec<Element>> = input
         .lines()
         .map(|line| line.chars().map(Element::new).collect())
@@ -43,7 +43,7 @@ pub fn part2(input: &str) -> Result<String> {
         }
     }
 
-    Ok(sum.to_string())
+    Ok(sum)
 }
 
 fn sum_adjacents(input: &mut Vec<Vec<Element>>, p: Point, mode: Mode) -> Option<i32> {

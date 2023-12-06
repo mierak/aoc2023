@@ -3,16 +3,14 @@ use std::{collections::VecDeque, str::FromStr};
 use anyhow::{bail, Result};
 use itertools::Itertools;
 
-pub fn part1(input: &str) -> Result<String> {
-    let result: i32 = input
+pub fn part1(input: &str) -> Result<i32> {
+    input
         .lines()
         .map(|line| line.parse::<Card>())
         .map(|card| -> Result<i32> { Ok(card?.count_points()) })
-        .try_fold(0, |acc, val| -> Result<i32> { Ok(acc + val?) })?;
-
-    Ok(result.to_string())
+        .try_fold(0, |acc, val| -> Result<i32> { Ok(acc + val?) })
 }
-pub fn part2(input: &str) -> Result<String> {
+pub fn part2(input: &str) -> Result<i32> {
     let original_cards: VecDeque<_> = input.lines().map(|line| line.parse::<Card>()).try_collect()?;
     let mut processed_cards = 0;
 
@@ -31,7 +29,7 @@ pub fn part2(input: &str) -> Result<String> {
         processed_cards += 1;
     }
 
-    Ok(processed_cards.to_string())
+    Ok(processed_cards)
 }
 
 #[derive(Debug, Default, Clone)]

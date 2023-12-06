@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 
-pub fn part1(input: &str) -> Result<String> {
+pub fn part1(input: &str) -> Result<usize> {
     let valid_game = Game {
         id: 0,
         green: 13,
@@ -17,17 +17,17 @@ pub fn part1(input: &str) -> Result<String> {
         .map(|game| game.id)
         .sum();
 
-    Ok(res.to_string())
+    Ok(res)
 }
 
-pub fn part2(input: &str) -> Result<String> {
+pub fn part2(input: &str) -> Result<i32> {
     let res: i32 = input
         .lines()
         .filter_map(|line| line.parse::<Game>().ok())
         .map(|game| game.power())
         .sum();
 
-    Ok(res.to_string())
+    Ok(res)
 }
 
 #[derive(Debug)]

@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 
-pub fn part1(input: &str) -> Result<String> {
-    Ok(input
+pub fn part1(input: &str) -> Result<i32> {
+    input
         .lines()
         .map(|val| -> Result<i32> {
             let mut res = Res::default();
@@ -15,12 +15,11 @@ pub fn part1(input: &str) -> Result<String> {
             }
             res.to_number()
         })
-        .sum::<Result<i32>>()?
-        .to_string())
+        .sum::<Result<i32>>()
 }
 
-pub fn part2(input: &str) -> Result<String> {
-    Ok(input
+pub fn part2(input: &str) -> Result<i32> {
+    input
         .lines()
         .map(|val| -> Result<i32> {
             let mut res = Res::default();
@@ -40,8 +39,7 @@ pub fn part2(input: &str) -> Result<String> {
 
             res.to_number()
         })
-        .sum::<Result<i32>>()?
-        .to_string())
+        .sum::<Result<i32>>()
 }
 
 #[derive(Default, Debug)]

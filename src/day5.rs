@@ -1,12 +1,12 @@
 use std::{ops::Range, str::FromStr};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use itertools::Itertools;
 use strum::{EnumIter, IntoEnumIterator};
 
-pub fn part1(input: &str) -> Result<String> {
+pub fn part1(input: &str) -> Result<i64> {
     let maps: Maps = input.parse()?;
-    let result = (0..maps.seeds.len())
+    (0..maps.seeds.len())
         .fold(None, |acc, i| {
             let current = MapsEnum::iter().fold(maps.seeds[i], |acc, val| maps.get(val).map(acc));
             if acc.is_none() || acc.is_some_and(|v| current < v) {
@@ -15,13 +15,10 @@ pub fn part1(input: &str) -> Result<String> {
                 acc
             }
         })
-        .map(|v| v.to_string())
-        .unwrap_or("Error, no destination found at all".to_string());
-
-    Ok(result)
+        .ok_or(anyhow!("Error, no destination found at all"))
 }
 
-pub fn part2(input: &str) -> Result<String> {
+pub fn part2(input: &str) -> Result<i64> {
     let maps: Maps = input.parse()?;
     let mut lowest_dest_location = None;
 
@@ -41,9 +38,10 @@ pub fn part2(input: &str) -> Result<String> {
                 lowest_dest_location = Some(current);
             }
         }
+        dbg!(lowest_dest_location);
     }
 
-    Ok(lowest_dest_location.unwrap().to_string())
+    lowest_dest_location.ok_or(anyhow!("Error, no destination found at all"))
 }
 
 #[derive(Debug, EnumIter)]
