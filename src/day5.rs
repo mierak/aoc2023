@@ -38,7 +38,6 @@ pub fn part2(input: &str) -> Result<i64> {
                 lowest_dest_location = Some(current);
             }
         }
-        dbg!(lowest_dest_location);
     }
 
     lowest_dest_location.ok_or(anyhow!("Error, no destination found at all"))
