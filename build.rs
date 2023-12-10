@@ -7,7 +7,7 @@ fn part(day: &usize, part: &i32) -> String {
         match day{day}::part{part}(buf) {{
             Ok(res) => {{
                 let elapsed = start.elapsed().as_secs_f64();
-                println!("d{day:0>2}p{part} answer is: '{{}}' and took: {{:}}{{}}", res.to_string().green(), elapsed.to_string().yellow(), "s".yellow());
+                println!("d{day:0>2}p{part} answer is: '{{}}' and took: {{:}}{{}}", res.to_string().green(), (elapsed * 1000.0).to_string().yellow(), "ms".yellow());
             }}
             Err(err) => {{
                 let elapsed = start.elapsed().as_secs_f64();
