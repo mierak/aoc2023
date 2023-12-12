@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 
 pub fn part1(input: &str) -> Result<usize> {
@@ -89,14 +89,13 @@ impl SpringsRow {
                 if self.springs.iter().skip(i + 1 + length).any(|v| *v == Spring::Damaged) {
                     continue;
                 }
-                // Cache result for this section of the row
-                *self.memo.entry((length_idx, start_idx)).or_insert(0) += 1;
                 result += 1;
             } else {
                 let res = self.find_valid_positions(length_idx + 1, i + length + 1);
-                // Cache result for this section of the row
-                *self.memo.entry((length_idx, start_idx)).or_insert(0) += res;
                 result += res;
+
+                // Cache result starting at start_idx
+                *self.memo.entry((length_idx, start_idx)).or_insert(0) += res;
             }
         }
         result
@@ -114,13 +113,15 @@ impl FromStr for Springs {
                 let (springs, lenghts) = l.split_once(' ').context("Invalid input")?;
                 let springs = springs
                     .chars()
-                    .map(|c| match c {
-                        '#' => Spring::Damaged,
-                        '?' => Spring::Unknown,
-                        '.' => Spring::Working,
-                        _ => panic!("Invalid input"),
+                    .map(|c| {
+                        Ok(match c {
+                            '#' => Spring::Damaged,
+                            '?' => Spring::Unknown,
+                            '.' => Spring::Working,
+                            _ => bail!("Invalid spring"),
+                        })
                     })
-                    .collect_vec();
+                    .try_collect()?;
                 let lengths = lenghts.split(',').map(|l| l.parse::<usize>()).try_collect()?;
                 Ok(SpringsRow {
                     springs,
