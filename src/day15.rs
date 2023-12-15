@@ -14,34 +14,37 @@ pub fn part2(input: &str) -> Result<usize> {
     Ok(input
         .split(',')
         .filter_map(|v| -> Option<Operation> { v.parse::<Operation>().ok() })
-        .fold((0..256).map(|_| Vec::<Lens>::new()).collect_vec(), |mut acc, val| {
-            match val {
-                Operation {
-                    label,
-                    operation_type: OperationType::Remove,
-                    box_idx,
-                } => {
-                    if let Some((idx, _)) = acc[box_idx].iter().enumerate().find(|(_, v)| v.label == label) {
-                        acc[box_idx].remove(idx);
+        .fold(
+            (0..256).map(|_| Vec::<Lens>::new()).collect_vec(),
+            |mut acc, mut val| {
+                match val {
+                    Operation {
+                        label,
+                        operation_type: OperationType::Remove,
+                        box_idx,
+                    } => {
+                        if let Some((idx, _)) = acc[box_idx].iter().enumerate().find(|(_, v)| v.label == label) {
+                            acc[box_idx].remove(idx);
+                        }
+                    }
+                    Operation {
+                        ref mut label,
+                        operation_type: OperationType::Insert { focal_length },
+                        box_idx,
+                    } => {
+                        if let Some(ref mut lens) = acc[box_idx].iter_mut().find(|v| &v.label == label) {
+                            lens.focal_length = focal_length;
+                        } else {
+                            acc[box_idx].push(Lens {
+                                label: std::mem::take(label),
+                                focal_length,
+                            });
+                        }
                     }
                 }
-                Operation {
-                    ref label,
-                    operation_type: OperationType::Insert { focal_length },
-                    box_idx,
-                } => {
-                    if let Some(ref mut lens) = acc[box_idx].iter_mut().find(|v| &v.label == label) {
-                        lens.focal_length = focal_length;
-                    } else {
-                        acc[box_idx].push(Lens {
-                            label: label.clone(),
-                            focal_length,
-                        });
-                    }
-                }
-            }
-            acc
-        })
+                acc
+            },
+        )
         .iter()
         .enumerate()
         .filter(|(_, v)| !v.is_empty())
