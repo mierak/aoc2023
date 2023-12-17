@@ -3,12 +3,7 @@ use itertools::Itertools;
 use std::{collections::HashMap, str::FromStr};
 
 pub fn part1(input: &str) -> Result<i64> {
-    let mut grid = input.parse::<Grid>()?;
-    let position = Coord { x: 0, y: 0 };
-    let current_source_direction = Direction::Right;
-    let mut cache = HashMap::new();
-
-    Ok(grid.traverse(position, current_source_direction, &mut cache))
+    Ok(input.parse::<Grid>()?.energize(Coord { x: 0, y: 0 }, Direction::Right))
 }
 
 pub fn part2(input: &str) -> Result<i64> {
@@ -68,11 +63,11 @@ impl Grid {
     fn reset(&mut self) {
         self.0.iter_mut().for_each(|row| {
             row.iter_mut().for_each(|tile| match tile {
-                Tile::MirrorUp { has_beam } => *has_beam = false,
-                Tile::MirrorDown { has_beam } => *has_beam = false,
-                Tile::SplitterVertical { has_beam } => *has_beam = false,
-                Tile::SplitterHorizontal { has_beam } => *has_beam = false,
-                Tile::Empty { has_beam } => *has_beam = false,
+                Tile::MirrorUp { energized: has_beam } => *has_beam = false,
+                Tile::MirrorDown { energized: has_beam } => *has_beam = false,
+                Tile::SplitterVertical { energized: has_beam } => *has_beam = false,
+                Tile::SplitterHorizontal { energized: has_beam } => *has_beam = false,
+                Tile::Empty { energized: has_beam } => *has_beam = false,
             })
         })
     }
@@ -88,25 +83,22 @@ impl Grid {
         current_source_direction: Direction,
         cache: &mut HashMap<(Direction, Coord), ()>,
     ) -> i64 {
-        let mut result = 0;
         if cache.contains_key(&(current_source_direction, position)) {
             return 0;
         }
+        cache.insert((current_source_direction, position), ());
+
+        let mut result = 0;
         let tile = &mut self[&position];
         if !tile.is_energized() {
             result += 1;
         }
         tile.energize();
-        cache.insert((current_source_direction, position), ());
 
         match tile.next(&current_source_direction) {
-            (direction1, None) => {
-                if let Some(pos) = position.move_in_direction(&direction1, self) {
-                    result + self.traverse(pos, direction1, cache)
-                } else {
-                    result
-                }
-            }
+            (direction1, None) => position
+                .move_in_direction(&direction1, self)
+                .map_or(result, |pos| result + self.traverse(pos, direction1, cache)),
             (direction1, Some(direction2)) => {
                 match (
                     position.move_in_direction(&direction1, self),
@@ -115,7 +107,7 @@ impl Grid {
                     (Some(pos1), Some(pos2)) => {
                         result + self.traverse(pos1, direction1, cache) + self.traverse(pos2, direction2, cache)
                     }
-                    (Some(pos1), None) => result + self.traverse(pos1, direction1, cache),
+                    (Some(pos1), None) => self.traverse(pos1, direction1, cache),
                     (None, Some(pos2)) => result + self.traverse(pos2, direction2, cache),
                     (None, None) => result,
                 }
@@ -129,6 +121,7 @@ impl std::ops::IndexMut<&Coord> for Grid {
         &mut self.0[index.y][index.x]
     }
 }
+
 impl std::ops::Index<&Coord> for Grid {
     type Output = Tile;
 
@@ -141,12 +134,11 @@ impl FromStr for Grid {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let grid = s
-            .lines()
-            .map(|line| line.chars().map(|c| c.try_into()).try_collect())
-            .try_collect()?;
-
-        Ok(Self(grid))
+        Ok(Grid(
+            s.lines()
+                .map(|line| line.chars().map(|c| c.try_into()).try_collect())
+                .try_collect()?,
+        ))
     }
 }
 
@@ -160,11 +152,11 @@ enum Direction {
 
 #[derive(Debug, Clone, Copy)]
 enum Tile {
-    MirrorUp { has_beam: bool },
-    MirrorDown { has_beam: bool },
-    SplitterVertical { has_beam: bool },
-    SplitterHorizontal { has_beam: bool },
-    Empty { has_beam: bool },
+    MirrorUp { energized: bool },
+    MirrorDown { energized: bool },
+    SplitterVertical { energized: bool },
+    SplitterHorizontal { energized: bool },
+    Empty { energized: bool },
 }
 
 impl Tile {
@@ -192,21 +184,21 @@ impl Tile {
 
     fn energize(&mut self) {
         match self {
-            Tile::MirrorUp { has_beam } => *has_beam = true,
-            Tile::MirrorDown { has_beam } => *has_beam = true,
-            Tile::SplitterVertical { has_beam } => *has_beam = true,
-            Tile::SplitterHorizontal { has_beam } => *has_beam = true,
-            Tile::Empty { has_beam } => *has_beam = true,
+            Tile::MirrorUp { energized: has_beam } => *has_beam = true,
+            Tile::MirrorDown { energized: has_beam } => *has_beam = true,
+            Tile::SplitterVertical { energized: has_beam } => *has_beam = true,
+            Tile::SplitterHorizontal { energized: has_beam } => *has_beam = true,
+            Tile::Empty { energized: has_beam } => *has_beam = true,
         }
     }
 
     fn is_energized(&self) -> bool {
         match self {
-            Tile::MirrorUp { has_beam } => *has_beam,
-            Tile::MirrorDown { has_beam } => *has_beam,
-            Tile::SplitterVertical { has_beam } => *has_beam,
-            Tile::SplitterHorizontal { has_beam } => *has_beam,
-            Tile::Empty { has_beam } => *has_beam,
+            Tile::MirrorUp { energized: has_beam } => *has_beam,
+            Tile::MirrorDown { energized: has_beam } => *has_beam,
+            Tile::SplitterVertical { energized: has_beam } => *has_beam,
+            Tile::SplitterHorizontal { energized: has_beam } => *has_beam,
+            Tile::Empty { energized: has_beam } => *has_beam,
         }
     }
 }
@@ -215,11 +207,11 @@ impl TryFrom<char> for Tile {
     type Error = anyhow::Error;
     fn try_from(s: char) -> Result<Self, Self::Error> {
         match s {
-            '|' => Ok(Tile::SplitterVertical { has_beam: false }),
-            '-' => Ok(Tile::SplitterHorizontal { has_beam: false }),
-            '/' => Ok(Tile::MirrorUp { has_beam: false }),
-            '\\' => Ok(Tile::MirrorDown { has_beam: false }),
-            '.' => Ok(Tile::Empty { has_beam: false }),
+            '|' => Ok(Tile::SplitterVertical { energized: false }),
+            '-' => Ok(Tile::SplitterHorizontal { energized: false }),
+            '/' => Ok(Tile::MirrorUp { energized: false }),
+            '\\' => Ok(Tile::MirrorDown { energized: false }),
+            '.' => Ok(Tile::Empty { energized: false }),
             _ => Err(anyhow::anyhow!("Invalid tile: {}", s)),
         }
     }
