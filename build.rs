@@ -74,16 +74,16 @@ fn main() {
         out.write_all(part(day, &1).as_bytes()).unwrap();
         out.write_all(part(day, &2).as_bytes()).unwrap();
         out.write_all(b"    } else {").unwrap();
-        out.new_line();
-        out.write_fmt(format_args!(
-            r#"        println!("d{day:0>2}p1: {{}}", "SKIPPED".yellow());"#
-        ))
-        .unwrap();
-        out.new_line();
-        out.write_fmt(format_args!(
-            r#"        println!("d{day:0>2}p2: {{}}", "SKIPPED".yellow());"#
-        ))
-        .unwrap();
+        // out.new_line();
+        // out.write_fmt(format_args!(
+        //     r#"        println!("d{day:0>2}p1: {{}}", "SKIPPED".yellow());"#
+        // ))
+        // .unwrap();
+        // out.new_line();
+        // out.write_fmt(format_args!(
+        //     r#"        println!("d{day:0>2}p2: {{}}", "SKIPPED".yellow());"#
+        // ))
+        // .unwrap();
         out.new_line();
         out.write_all(b"    }").unwrap();
         out.new_line();

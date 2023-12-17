@@ -73,8 +73,7 @@ impl Grid {
     }
 
     fn energize(&mut self, position: Coord, direction: Direction) -> i64 {
-        let mut cache = HashMap::new();
-        self.traverse(position, direction, &mut cache)
+        self.traverse(position, direction, &mut HashMap::new())
     }
 
     fn traverse(
