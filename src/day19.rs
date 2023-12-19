@@ -1,6 +1,9 @@
 use anyhow::{bail, Context, Result};
 use itertools::Itertools;
-use std::{collections::HashMap, str::FromStr};
+use std::{
+    collections::{HashMap, VecDeque},
+    str::FromStr,
+};
 
 pub fn part1(input: &str) -> Result<i64> {
     let (workflows, parts) = input.split_once("\n\n").context("Invalid input format")?;
@@ -41,11 +44,23 @@ pub fn part1(input: &str) -> Result<i64> {
     Ok(sum)
 }
 
-pub fn part2(_input: &str) -> Result<i64> {
-    Ok(0)
+pub fn part2(input: &str) -> Result<i64> {
+    let (workflows, _) = input.split_once("\n\n").context("Invalid input format")?;
+    let workflows: HashMap<String, Workflow> = workflows
+        .lines()
+        .map(|w| -> Result<_> {
+            let w = w.parse::<Workflow>()?;
+            Ok((w.name.clone(), w))
+        })
+        .try_collect()?;
+
+    workflows
+        .get("in")
+        .context("Invalid state. No initial WF.")?
+        .solve(&workflows, PartRange::default())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Part {
     cool: i64,
     musical: i64,
@@ -114,10 +129,98 @@ impl FromStr for Part {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct RangeInclusive<T> {
+    start: T,
+    end: T,
+}
+#[derive(Debug, Clone, Copy)]
+struct PartRange {
+    cool: RangeInclusive<i64>,
+    musical: RangeInclusive<i64>,
+    aerodynamic: RangeInclusive<i64>,
+    shiny: RangeInclusive<i64>,
+}
+
+impl Default for PartRange {
+    fn default() -> Self {
+        Self {
+            cool: RangeInclusive { start: 1, end: 4000 },
+            musical: RangeInclusive { start: 1, end: 4000 },
+            aerodynamic: RangeInclusive { start: 1, end: 4000 },
+            shiny: RangeInclusive { start: 1, end: 4000 },
+        }
+    }
+}
+
+impl PartRange {
+    fn trim_by_rule(&mut self, rule: &Rule) {
+        if let Some(condition) = &rule.condition {
+            let to_edit = self.get_mut(&condition.category);
+            match condition.condition_type {
+                ConditionType::LessThan => {
+                    to_edit.end = condition.value - 1;
+                }
+                ConditionType::MoreThan => {
+                    to_edit.start = condition.value + 1;
+                }
+            }
+        }
+    }
+
+    fn trim_by_rule_inverse(&mut self, rule: &Rule) {
+        if let Some(condition) = &rule.condition {
+            let to_edit = self.get_mut(&condition.category);
+            match condition.condition_type {
+                ConditionType::LessThan => {
+                    to_edit.start = condition.value;
+                }
+                ConditionType::MoreThan => {
+                    to_edit.end = condition.value;
+                }
+            }
+        }
+    }
+
+    fn get_mut(&mut self, category: &Category) -> &mut RangeInclusive<i64> {
+        match category {
+            Category::ExtremelyCool => &mut self.cool,
+            Category::Musical => &mut self.musical,
+            Category::Aerodynamic => &mut self.aerodynamic,
+            Category::Shiny => &mut self.shiny,
+        }
+    }
+
+    fn product(&self) -> i64 {
+        (self.cool.end - self.cool.start + 1)
+            * (self.musical.end - self.musical.start + 1)
+            * (self.aerodynamic.end - self.aerodynamic.start + 1)
+            * (self.shiny.end - self.shiny.start + 1)
+    }
+}
+
 #[derive(Debug)]
 struct Workflow {
     name: String,
     rules: Vec<Rule>,
+}
+
+impl Workflow {
+    fn solve(&self, wfs: &HashMap<String, Workflow>, mut current: PartRange) -> Result<i64> {
+        let mut result = 0;
+        for rule in &self.rules {
+            let mut c = current;
+            c.trim_by_rule(rule);
+            if let Action::Send(dest) = &rule.action {
+                result += wfs.get(dest).context("Invalid state. No WF.")?.solve(wfs, c)?;
+            } else if let Action::Accept = &rule.action {
+                result += c.product();
+            }
+            current.trim_by_rule_inverse(rule);
+        }
+
+        Ok(result)
+    }
 }
 
 impl FromStr for Workflow {
